@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "School Management API",
+    "description": "REST API for adding schools and listing them sorted by proximity using the Haversine formula.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "school-management-api-v1",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://school-management-api-9ud9.onrender.com",
+      "type": "string",
+      "description": "Change to your deployed URL when testing in production."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        },
+        "description": "Verify that the server is running correctly."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"School Management API is running.\",\n  \"version\": \"1.0.0\",\n  \"timestamp\": \"2026-05-08T14:00:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Add School",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"ABC School\",\n  \"address\": \"Rajkot, Gujarat\",\n  \"latitude\": 22.3039,\n  \"longitude\": 70.8022\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/addSchool",
+          "host": ["{{baseUrl}}"],
+          "path": ["addSchool"]
+        },
+        "description": "Adds a new school to the database. All fields are required and validated."
+      },
+      "response": [
+        {
+          "name": "School Added Successfully",
+          "status": "Created",
+          "code": 201,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"School added successfully.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"ABC School\",\n    \"address\": \"Rajkot, Gujarat\",\n    \"latitude\": 22.3039,\n    \"longitude\": 70.8022\n  }\n}"
+        },
+        {
+          "name": "Validation Error",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed. Please check your input.\",\n  \"errors\": [\n    {\n      \"field\": \"latitude\",\n      \"message\": \"Latitude must be a number between -90 and 90.\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Add School - Missing Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\",\n  \"address\": \"\",\n  \"latitude\": 999,\n  \"longitude\": 999\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/addSchool",
+          "host": ["{{baseUrl}}"],
+          "path": ["addSchool"]
+        },
+        "description": "Demonstrates the validation error response when invalid data is submitted."
+      },
+      "response": []
+    },
+    {
+      "name": "List Schools by Proximity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/listSchools?latitude=22.3&longitude=70.8",
+          "host": ["{{baseUrl}}"],
+          "path": ["listSchools"],
+          "query": [
+            {
+              "key": "latitude",
+              "value": "22.3",
+              "description": "User's current latitude"
+            },
+            {
+              "key": "longitude",
+              "value": "70.8",
+              "description": "User's current longitude"
+            }
+          ]
+        },
+        "description": "Fetches all schools from the database and returns them sorted by distance (nearest first) from the given coordinates. Distance is in kilometres."
+      },
+      "response": [
+        {
+          "name": "Schools Sorted by Distance",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"3 school(s) found, sorted by proximity.\",\n  \"userLocation\": {\n    \"latitude\": 22.3,\n    \"longitude\": 70.8\n  },\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"ABC School\",\n      \"address\": \"Rajkot, Gujarat\",\n      \"latitude\": 22.3039,\n      \"longitude\": 70.8022,\n      \"distance\": 0.48\n    },\n    {\n      \"id\": 5,\n      \"name\": \"Blue Ridge\",\n      \"address\": \"Bhavnagar, Gujarat\",\n      \"latitude\": 21.7645,\n      \"longitude\": 72.1519,\n      \"distance\": 152.73\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Sunrise High\",\n      \"address\": \"Ahmedabad, Gujarat\",\n      \"latitude\": 23.0225,\n      \"longitude\": 72.5714,\n      \"distance\": 194.32\n    }\n  ]\n}"
+        },
+        {
+          "name": "Missing Coordinates",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed. Please check your input.\",\n  \"errors\": [\n    {\n      \"field\": \"latitude\",\n      \"message\": \"Latitude query parameter is required.\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Schools - Missing Params",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/listSchools",
+          "host": ["{{baseUrl}}"],
+          "path": ["listSchools"]
+        },
+        "description": "Demonstrates the validation error when no query parameters are provided."
+      },
+      "response": []
+    }
+  ]
+}
